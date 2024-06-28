@@ -1,0 +1,43 @@
+<!-------- Add below code in end of the file ------------------------>
+
+<div class="product-vari p-v-size">
+    <p>Flavour</p>
+    <div class="variants">
+        {% for metaobject1 in product.metafields.custom.product_flavours.value %}
+        <button type="submit" name="variant" data-product-url="{{ metaobject1.product.value.url }}" style="background-color: {{ metaobject1.flavour_color.value }};">
+            <p>{{ metaobject1.flavour_name.value }}</p>
+        </button>
+        {% endfor %}
+    </div>
+</div>
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    variantclick();
+});
+    function variantclick() {
+      const filterButtons = document.querySelectorAll('.variants button');
+      const productList = document.getElementById('MainContent');
+  
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const filter = this.getAttribute('data-product-url');
+          history.pushState(null, '', filter);
+          fetchProducts(filter);
+        });
+      });
+    }
+    function fetchProducts(filter) {
+       const productList = document.getElementById('MainContent');
+      fetch(filter)
+        .then(response => response.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const newProductList = doc.getElementById('MainContent');
+          productList.innerHTML = newProductList.innerHTML;
+          variantclick();
+        })
+        .catch(error => console.error('Error fetching products:', error));
+    }
+</script>

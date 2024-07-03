@@ -14,6 +14,9 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     variantclick();
+      window.addEventListener('popstate', function() {
+        fetchProducts(window.location.pathname);
+    });
 });
     function variantclick() {
       const filterButtons = document.querySelectorAll('.variants button');

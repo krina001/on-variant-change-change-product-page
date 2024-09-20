@@ -1,4 +1,4 @@
-<!-------- with meta-object Add below code in end of the file ------------------------>
+<!-------- with using meta-object Add below code in end of the file ------------------------>
 
 <div class="product-vari p-v-size">
     <p>Flavour</p>
@@ -10,6 +10,45 @@
         {% endfor %}
     </div>
 </div>
+<!---------------- with using meta-object Add below code in end of the file End------------------------>
+
+<!---------------------------With Using Meta-fields-------------------------------->
+{% assign linked_products = product.metafields.custom.products.value %}
+{% if linked_products %}
+<div class="product-vari p-v-size">
+  <p>Color: <span id="selected-variant-name">None</span></p>
+  <div class="varients">
+    {% for linked_product in linked_products %}
+              {% assign color_option_index = nil %}       
+        {% for option in linked_product.options %}
+          {% if option == "color" or option == "Color" %}
+            {% assign color_option_index = forloop.index0 %}
+          {% endif %}
+        {% endfor %}
+      {% if color_option_index %}
+      <button data-product-url="{{ linked_product.url }}"
+      data-color-name="{% for variant in linked_product.variants %}{% assign color_value = variant.options[color_option_index] %}{% if forloop.first %}{{ color_value }}{% endif %}{% endfor %}" class="{% if linked_product.available %} available {% else %} not-available {% endif %} m-tooltip m-tooltip--top" title="{{ linked_product.variant }}">      
+        <!-- Display the color variants if the color option is found -->
+
+          {% for variant in linked_product.variants %}
+            {% assign color_value = variant.options[color_option_index] %}
+            {% if variant.featured_image  %}
+            <span style="background-image: url('{{ variant.featured_image | img_url: 'small' }}');" class="variant-image"></span>
+              {% else %}
+            <span style="background-image: url('{{ linked_product.featured_image | img_url: 'small' }}');" class="variant-image"></span>
+              {% endif %}
+            <span class="m-tooltip__content">{{ color_value }}</span>
+            {% break %}
+          {% endfor %}       
+      </button>
+        {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+<!-------------------------With Using Meta-fields End---------------------------->
+
+
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -23,6 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const productList = document.getElementById('MainContent');
   
       filterButtons.forEach(button => {
+        // Start only add when used with meta-field
+       if (currentProductUrl === button.getAttribute('data-product-url')){
+            button.classList.add('selected');
+          const colorName = button.getAttribute('data-color-name');
+            document.getElementById('selected-variant-name').textContent = colorName;
+        }
+         // End only add when used with meta-field
         button.addEventListener('click', function() {
           const filter = this.getAttribute('data-product-url');
           history.pushState(null, '', filter);

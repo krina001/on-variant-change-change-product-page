@@ -1,0 +1,60 @@
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const productList = document.getElementById('MainContent');
+    const savedVariantUrl = localStorage.getItem('selectedVariantUrl');
+
+    if (savedVariantUrl) {
+        // Fetch and display the saved variant data before showing the product content
+        productList.style.visibility = 'hidden';
+        fetchProducts(savedVariantUrl, false, function () {
+            productList.style.visibility = 'visible';
+        });
+    } else {
+        // No saved variant, use the default variant and save its URL
+        const defaultVariantUrl = window.location.pathname;
+        localStorage.setItem('selectedVariantUrl', defaultVariantUrl);
+        variantclick();
+    }
+
+    // Handle back/forward navigation
+    window.addEventListener('popstate', function () {
+        fetchProducts(window.location.pathname, false);
+    });
+});
+
+function variantclick() {
+    const filterButtons = document.querySelectorAll('.varients button');
+    const productList = document.getElementById('MainContent');
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const filter = this.getAttribute('data-product-url');
+            localStorage.setItem('selectedVariantUrl', filter); // Save selected variant URL
+            fetchProducts(filter, true);
+        });
+    });
+}
+
+function fetchProducts(filter, updateURL, callback) {
+    const productList = document.getElementById('MainContent');
+    fetch(filter)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newProductList = doc.getElementById('MainContent');
+            productList.innerHTML = newProductList.innerHTML;
+            variantclick();
+
+            // Update the URL only if specified
+            if (updateURL) {
+                history.replaceState(null, '', window.location.pathname);
+            }
+            // Execute callback if provided
+            if (typeof callback === 'function') {
+                callback();
+            }
+        })
+        .catch(error => console.error('Error fetching products:', error));
+}
+</script>
